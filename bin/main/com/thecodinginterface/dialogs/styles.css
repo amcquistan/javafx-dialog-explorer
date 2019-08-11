@@ -1,0 +1,58 @@
+
+.heading {
+  -fx-padding: 5 10 5 10;
+  -fx-background-color: #000000;
+}
+
+.heading Label {
+  -fx-text-fill: white;
+}
+
+.feedback-label {
+  -fx-min-width: 300;
+  -fx-padding: 5;
+}
+
+.dialog-options {
+  -fx-background-color: transparent;
+  -fx-padding: 10;
+  -fx-border-width: 0;
+  /* -fx-alignment: top-center; */
+}
+
+.dialog-option {
+  -fx-background-radius: 0;
+  -fx-background-color: #000000;
+  -fx-padding: 10 20 10 20;
+  -fx-text-fill: white;
+  -fx-font-size: 14px;
+}
+
+.dialog-option:hover {
+  -fx-text-fill: #4873c2;
+  -fx-background-color: #322828;
+}
+
+.dialog-option:selected {
+  -fx-background-color: white;
+  -fx-text-fill: #426ab7;
+  -fx-border-width: 1;
+  -fx-border-color: #4381f4;
+}
+
+.source-btn {
+  -fx-background-radius: 1;
+  -fx-background-color: white;
+  -fx-pref-width: 80;
+}
+
+.source-btn:hover {
+  -fx-background-radius: 1;
+  -fx-background-color: transparent;
+  -fx-border-color: #679cf7;
+}
+
+.source-btn:selected {
+  -fx-border-radius: 1;
+  -fx-border-color: #77a7f9;
+}
