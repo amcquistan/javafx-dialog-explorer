@@ -109,6 +109,7 @@ public class App extends Application {
         var dialogsToggleGrp = new ToggleGroup();
         menuVBox.getChildren().addAll(
             new DialogOption(BLOCKING_NONE_ALERT, dialogsToggleGrp, () -> {
+                updateWebResouceUrls(BLOCKING_NONE_ALERT);
                 var alert = new Alert(AlertType.NONE);
 
                 alert.setTitle("I'm an alert title");
@@ -129,6 +130,7 @@ public class App extends Application {
                         BLOCKING_NONE_ALERT
                     );
                     feedbackLbl.setText(msg);
+                    clearDialogOptionSelections();
                 });
             }),
             new DialogOption(BLOCKING_INFO_ALERT, dialogsToggleGrp, () -> {
