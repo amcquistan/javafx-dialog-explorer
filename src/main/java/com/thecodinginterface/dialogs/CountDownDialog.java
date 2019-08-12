@@ -30,11 +30,12 @@ class CountDownDialog extends Dialog<Integer> {
     private static final String PAUSE_TXT = "Pause";
     private static final String START_TXT = "Start";
 
-
     CountDownDialog(Stage primaryStage, int startFrom, String header, boolean decorated) {
         super();
         initOwner(primaryStage);
+
         if (!decorated) {
+            // you can change the dialog decoration style also
             initStyle(StageStyle.UNDECORATED);
         }
         
@@ -84,6 +85,12 @@ class CountDownDialog extends Dialog<Integer> {
             return Integer.valueOf(current.get());
         });
 
+        current.addListener((obs, ov, nv) -> {
+            if (nv.intValue() == 0) {
+              close();
+            }
+        });
+
         startTimer();
     }
 
@@ -115,6 +122,8 @@ class CountDownDialog extends Dialog<Integer> {
                 int currentCnt = current.intValue();
                 if (currentCnt > 0) {
                     current.set(currentCnt - 1);
+                } else if (currentCnt == 0) {
+
                 }
             });
         }

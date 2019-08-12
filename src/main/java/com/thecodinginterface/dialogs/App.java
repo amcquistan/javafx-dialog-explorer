@@ -1,10 +1,7 @@
 
 package com.thecodinginterface.dialogs;
 
-import java.awt.Dialog;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,7 +12,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
@@ -53,9 +49,8 @@ public class App extends Application {
     private final String NONMODAL_ERR_ALERT = "Error Alert (Non-Modal)";
     private final String ALERT_NO_HEADER = "Alert (No Header)";
     private final String TEXT_DIALOG = "Text Input Dialog";
-    private final String CHOICE_DIALOG = "Choice Input Dialog";
+    private final String CHOICE_DIALOG = "Choice Box Dialog";
     private final String CUSTOM_DLG = "Custom Dialog";
-    private final String UNDECORATED_CUSTOM_DLG = "Custom Dialog (Undecorated)";
 
     private final Map<String, Pair<String, String>> webResourceMap = new HashMap<>();
 
@@ -115,14 +110,24 @@ public class App extends Application {
         menuVBox.getChildren().addAll(
             new DialogOption(BLOCKING_NONE_ALERT, dialogsToggleGrp, () -> {
                 var alert = new Alert(AlertType.NONE);
+
                 alert.setTitle("I'm an alert title");
                 alert.setHeaderText("I'm an alert header");
                 alert.setContentText("I'm the main alert context (body)");
 
                 alert.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+                // showAndWait is a blocking call so, the code execution path pauses in 
+                // the executing JavaFX thread until the user interacts with the dialog
+                // in a way that causes it to close
+                
                 Optional<ButtonType> result = alert.showAndWait();
                 result.ifPresent(btnType -> {
-                    var msg = String.format("You clicked %s in Alert %s", btnType.getButtonData(), BLOCKING_NONE_ALERT);
+                    var msg = String.format(
+                        "You clicked %s in Alert %s",
+                        btnType.getButtonData(),
+                        BLOCKING_NONE_ALERT
+                    );
                     feedbackLbl.setText(msg);
                 });
             }),
@@ -134,9 +139,6 @@ public class App extends Application {
                 alert.setHeaderText(BLOCKING_INFO_ALERT);
                 alert.setContentText(BLOCKING_INFO_ALERT);
 
-                // Alert#showAndWait blocking meaning that code within the execution path 
-                // that contains the Alert instance will pause execution until the Alert 
-                // is hidden by clicking Ok.
                 alert.showAndWait().ifPresent((btnType) -> {
                     feedbackLbl.setText("Thats all from " + BLOCKING_INFO_ALERT);
                     clearDialogOptionSelections();
@@ -171,7 +173,7 @@ public class App extends Application {
               });
           }),
           new DialogOption(BLOCKING_ERR_ALERT, dialogsToggleGrp, () -> {
-            updateWebResouceUrls(NONBLOCKING_ERR_ALERT);
+            updateWebResouceUrls(BLOCKING_ERR_ALERT);
 
             var alert = new Alert(AlertType.ERROR);
             alert.setTitle(BLOCKING_ERR_ALERT);
@@ -196,12 +198,16 @@ public class App extends Application {
             // meaning that code within the execution path that contains the Alert 
             // instance will continue to execute after Alert#show is called.
             alert.show();
+
+            // the code below the show() method call will get exectued immediately
+            // after show() is called rather than wait on a user to close the dialog
             alert.setOnHiding((evt) -> {
                 feedbackLbl.setText("Thats all from " + NONBLOCKING_ERR_ALERT);
                 clearDialogOptionSelections();
             });
 
-            feedbackLbl.setText(NONBLOCKING_ERR_ALERT + " execution path kept running after the dialog was displayed");
+            feedbackLbl.setText(NONBLOCKING_ERR_ALERT + 
+                " execution path kept running after the dialog was displayed");
           }),
           new DialogOption(NONMODAL_ERR_ALERT, dialogsToggleGrp, () -> {
             updateWebResouceUrls(NONMODAL_ERR_ALERT);
@@ -234,6 +240,7 @@ public class App extends Application {
 
             var alert = new Alert(AlertType.INFORMATION);
             alert.setTitle(ALERT_NO_HEADER);
+            // null as a value will cause the section to not be displayed
             alert.setHeaderText(null);
             alert.setContentText(ALERT_NO_HEADER);
 
@@ -285,11 +292,11 @@ public class App extends Application {
                     notFoundAlert.show();
                 }
             });
+            clearDialogOptionSelections();
           }),
           new DialogOption(CHOICE_DIALOG, dialogsToggleGrp, () -> {
             updateWebResouceUrls(CHOICE_DIALOG);
 
-            // remove
             var titles = webResourceMap.keySet().stream()
                 .filter(dlgOption -> !dlgOption.equals(CHOICE_DIALOG))
                 .collect(Collectors.toList());
@@ -310,6 +317,7 @@ public class App extends Application {
                   dlgOption.setSelected(true);
               });
             });
+            clearDialogOptionSelections();
           }),
           new DialogOption(CUSTOM_DLG, dialogsToggleGrp, () -> {
             updateWebResouceUrls(CUSTOM_DLG);
@@ -318,16 +326,6 @@ public class App extends Application {
 
             countDownDlg.showAndWait().ifPresent((endingValue) -> {
                 feedbackLbl.setText(String.format("%s was closed at %d", CUSTOM_DLG, endingValue));
-                clearDialogOptionSelections();
-            });
-          }),
-          new DialogOption(UNDECORATED_CUSTOM_DLG, dialogsToggleGrp, () -> {
-            updateWebResouceUrls(UNDECORATED_CUSTOM_DLG);
-            
-            var countDownDlg = new CountDownDialog(primaryStage, 60, UNDECORATED_CUSTOM_DLG, false);
-
-            countDownDlg.showAndWait().ifPresent((endingValue) -> {
-                feedbackLbl.setText(String.format("%s was closed at %d", UNDECORATED_CUSTOM_DLG, endingValue));
                 clearDialogOptionSelections();
             });
           })
@@ -401,63 +399,50 @@ public class App extends Application {
 
     void buildWebResouceMap() {
         webResourceMap.putAll(Map.ofEntries(
+          Map.entry(BLOCKING_NONE_ALERT, 
+            new Pair<String, String>(
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#non-alert",
+                "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Alert.html")),
           Map.entry(BLOCKING_INFO_ALERT, 
             new Pair<String, String>(
-                "https://thecodinginterface.com/blog/javafx-dev-setup-gradle-and-eclipse/",
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#informational-alert",
                 "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Alert.html")),
           Map.entry(BLOCKING_WARNING_ALERT,
             new Pair<String, String>(
-                "https://thecodinginterface.com/blog/javafx-with-gradle-and-eclipse-java-components/",
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#warning-alert",
                 "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Alert.html")),
           Map.entry(BLOCKING_CONFIRM_ALERT,
             new Pair<String, String>(
-                "https://thecodinginterface.com/blog/javafx-with-gradle-eclipse-fxml-scenebuilder/",
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#confirmation-alert",
                 "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Alert.html")),
           Map.entry(BLOCKING_ERR_ALERT,
             new Pair<String, String>(
-                "https://thecodinginterface.com/blog/intro-to-java-for-devs/",
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#error-alert",
                 "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Alert.html")),
           Map.entry(NONBLOCKING_ERR_ALERT,  
             new Pair<String, String>(
-                "https://thecodinginterface.com/blog/javafx-dev-setup-gradle-and-eclipse/",
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#error-alert-non-blocking",
                 "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Alert.html")),
           Map.entry(NONMODAL_ERR_ALERT, 
             new Pair<String, String>(
-                "https://thecodinginterface.com/blog/javafx-with-gradle-and-eclipse-java-components/",
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#error-alert-non-modal",
                 "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Alert.html")),
           Map.entry(ALERT_NO_HEADER, 
             new Pair<String, String>(
-                "https://thecodinginterface.com/blog/javafx-with-gradle-eclipse-fxml-scenebuilder/",
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#alert-no-header",
                 "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Alert.html")),
           Map.entry(TEXT_DIALOG, 
             new Pair<String, String>(
-                "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/TextInputDialog.html",
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#text-input-dialog",
                 "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/TextInputDialog.html")),
           Map.entry(CHOICE_DIALOG, 
             new Pair<String, String>(
-                "https://thecodinginterface.com/blog/deploy-flask-text-analytics-app/",
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#choice-box-dialog",
                 "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/ChoiceDialog.html")),
           Map.entry(CUSTOM_DLG, 
             new Pair<String, String>(
-                "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Dialog.html",
-                "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Dialog.html")),
-          Map.entry(UNDECORATED_CUSTOM_DLG,
-            new Pair<String, String>(
-                "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Dialog.html",
+                "https://thecodinginterface.com/blog/javafx-alerts-and-dialogs/#custom-dialog",
                 "https://openjfx.io/javadoc/11/javafx.controls/javafx/scene/control/Dialog.html"))
         ));
-        // webResourceMap.putAll(Map.of(
-        //     ,
-        //     ,
-        //     ,
-        //     ,
-        //     ,
-        //     ,
-        //     ,
-        //     ,
-        //     ,
-        //     ,
-            
-        // ));
     }
 }
